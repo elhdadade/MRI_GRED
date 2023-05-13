@@ -74,7 +74,7 @@ pycryptodomex==3.17
 pydantic==1.10.7
 PyJWT==2.7.0
 pyseto==1.7.2
-python-dotenv==1.0.0
+python-dotenv
 python-multipart==0.0.6
 pytz==2023.3
 PyYAML==6.0
