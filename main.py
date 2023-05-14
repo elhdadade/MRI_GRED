@@ -15,13 +15,13 @@ from pydantic import BaseModel
 from typing import List, Dict
 from twilio.rest import Client
 import random
+import re
 
 
 app = FastAPI()
 
     
 # Allow cross-origin resource sharing (CORS)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -41,14 +41,20 @@ c.execute('CREATE TABLE IF NOT EXISTS users'
              'specialty TEXT)')
 conn.commit()
 
-
 # Define user schema for signup
 class UserSignUp(BaseModel):
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr
     password: str
-    specialty: str
+
+    @validator('password')
+    def validate_password(cls, password):
+        if len(password) < 8:
+            raise ValueError('Password should be at least 8 characters')
+        if not any(c.isupper() for c in password):
+            raise ValueError('Password should contain at least one capital letter')
+        return password
 
 # Define user schema for login
 class UserLogin(BaseModel):
@@ -72,7 +78,6 @@ async def signup(user: UserSignUp):
               (user_id, user.first_name, user.last_name, user.email, user.password, user.specialty))
     conn.commit()
     return {"message": "User created successfully"}
-
 # Login route
 @app.post("/login")
 async def login(user: UserLogin):
