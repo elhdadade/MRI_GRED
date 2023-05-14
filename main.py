@@ -115,7 +115,7 @@ async def shutdown_event():
 
 # Replace the following with your Twilio account SID and authentication token
 account_sid = 'AC76f70e1408304d0c85e336a790b4c253'
-auth_token = '86087b266e9f6a00892493e177a47dd1'
+auth_token = '90206f381b861361546f821b47f5cb9c'
 twilio_phone_number = '+13204131998'
 
 client = Client(account_sid, auth_token)
@@ -286,7 +286,7 @@ async def upload_file(file: UploadFile = File(...), age: int = None,
     return {"patient_id": patient_id, "result": classified_label, "upload_time": upload_time}
 
 @app.get("/history")
-async def get_patient_history(national_id: str = None, phone_number: str = None):
+async def get_patient_history(national_id: int = None, phone_number: int = None):
     # Check if either national ID or phone number is provided
     if not national_id and not phone_number:
         return {"message": "Please provide either national ID or phone number."}
