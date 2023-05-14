@@ -203,8 +203,8 @@ cursor.execute('''
         CREATE TABLE IF NOT EXISTS patient_history
         (
             id TEXT PRIMARY KEY,
-            national_id TEXT,
-            phone_number TEXT,
+            national_id INTEGER,
+            phone_number INTEGER,
             results TEXT,
             upload_times TEXT,
             age INTEGER,
@@ -219,18 +219,30 @@ async def upload_file(file: UploadFile = File(...), age: int = None,
                      first_name: str = None,
                      last_name: str = None,
                      is_new: bool = True,
-                     national_id: str = None,
-                     phone_number: str = None):
+                     national_id: int = None,
+                     phone_number: int = None):
+    # Rest of the code...
+
     if is_new:
         if not national_id or not age or not first_name or not last_name or not phone_number:
             return {"error": "All fields (national ID, age, first name, last name, and phone number) are required for new users."}
+        # Validate national ID
+        if not re.match(r'^\d{14}$', str(national_id)):
+            return {"error": "Invalid national ID. It should be a 14-digit number."}
+        # Validate phone number
+        if not re.match(r'^\d{11}$', str(phone_number)):
+            return {"error": "Invalid phone number. It should be a 11-digit number."}
     else:
         if not phone_number:
             return {"error": "Phone number is required."}
+        # Validate phone number
+        if not re.match(r'^\d{11}$', str(phone_number)):
+            return {"error": "Invalid phone number. It should be a 11-digit number."}
 
     if is_new:
         # Generate a new history ID based on national ID and phone number
-        patient_id = hashlib.sha256((national_id + phone_number).encode()).hexdigest()
+        patient_id = hashlib.sha256((str(national_id) + str(phone_number)).encode()).hexdigest()
+
     else:
         # Generate a new history ID if national ID and phone number are not provided
         patient_id = str(uuid4())
