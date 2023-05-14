@@ -16,12 +16,17 @@ from typing import List, Dict
 from twilio.rest import Client
 import random
 import re
+from pydantic import BaseModel, EmailStr, validator
+from fastapi import FastAPI, HTTPException
 
 
 app = FastAPI()
 
     
 # Allow cross-origin resource sharing (CORS)
+
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -47,6 +52,7 @@ class UserSignUp(BaseModel):
     last_name: str
     email: EmailStr
     password: str
+    specialty: str
 
     @validator('password')
     def validate_password(cls, password):
@@ -73,11 +79,15 @@ async def signup(user: UserSignUp):
     # Generate a random 10-digit ID for the new user
     user_id = random.randint(1000000000, 9999999999)
 
-    # Insert new user into database with the generated ID
-    c.execute("INSERT INTO users (id, first_name, last_name, email, password, specialty) VALUES (?, ?, ?, ?, ?, ?)", 
-              (user_id, user.first_name, user.last_name, user.email, user.password, user.specialty))
+    # Hash the password using MD5 algorithm
+    hashed_password = hashlib.md5(user.password.encode()).hexdigest()
+
+    # Insert new user into database with the generated ID and hashed password
+    c.execute("INSERT INTO users (id, first_name, last_name, email, password, specialty) VALUES (?, ?, ?, ?, ?, ?)",
+              (user_id, user.first_name, user.last_name, user.email, hashed_password, user.specialty))
     conn.commit()
     return {"message": "User created successfully"}
+
 # Login route
 @app.post("/login")
 async def login(user: UserLogin):
@@ -305,4 +315,3 @@ async def get_patient_history(national_id: str = None, phone_number: str = None)
         history.append(patient_history)
 
     return {"history": history}
-    
