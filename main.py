@@ -91,8 +91,11 @@ async def signup(user: UserSignUp):
 # Login route
 @app.post("/login")
 async def login(user: UserLogin):
+    # Hash the password using MD5
+    password_hash = hashlib.md5(user.password.encode()).hexdigest()
+
     # Check if user exists and password is correct
-    c.execute("SELECT * FROM users WHERE email=? AND password=?", (user.email, user.password))
+    c.execute("SELECT * FROM users WHERE email=? AND password=?", (user.email, password_hash))
     result = c.fetchone()
     if result:
         return {"message": "Login successful"}
